@@ -3,27 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <title>Plaid Link Tool</title>
-    <script src="https://plaid.com"></script>
+    <!-- Load the official Plaid Link UI Script -->
+    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
 </head>
 <body style="font-family: sans-serif; text-align: center; padding-top: 50px;">
     <h2>Plaid Production Link Interface</h2>
     <p>Paste the <b>link-production-...</b> token from IntelliJ below:</p>
     <input type="text" id="tokenInput" style="width: 450px; padding: 10px; font-size: 16px;"><br><br>
     <button id="launchBtn" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">Launch Secure Login</button>
+    
     <div id="outputContainer" style="margin-top: 30px; display: none; background: #d4edda; color: #155724; padding: 20px; border: 1px solid #c3e6cb; display: inline-block;">
         <h3>Capture your Verification String:</h3>
         <code id="publicTokenVal" style="font-size: 16px; font-weight: bold;"></code>
     </div>
+
     <script>
         document.getElementById('launchBtn').onclick = function() {
-            const token = document.getElementById('tokenInput').value.trim();
+            // Grab the text token typed into the input field
+            const tokenValue = document.getElementById('tokenInput').value.trim();
+            
+            if (!tokenValue) {
+                alert("Please paste a valid token string from IntelliJ first.");
+                return;
+            }
+
+            // Initialize the visual popup window with exact configuration headers
             const handler = Plaid.create({
-                token: token,
-                onSuccess: function(public_token) {
+                token: tokenValue, // Fixed mapping target name
+                onSuccess: function(public_token, metadata) {
                     document.getElementById('outputContainer').style.display = 'inline-block';
                     document.getElementById('publicTokenVal').innerText = public_token;
+                },
+                onExit: function(err, metadata) {
+                    if (err != null) {
+                        console.error("Plaid link closed with errors:", err);
+                    }
                 }
             });
+            
+            // Execute the frame render onto the web browser layout layer
             handler.open();
         };
     </script>
